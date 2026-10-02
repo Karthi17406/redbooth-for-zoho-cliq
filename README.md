@@ -18,7 +18,8 @@ The extension can be installed directly using the following link:
 
 [Install Zoho Cliq Extension](https://cliq.zoho.com/installapp.do?id=8262)
 
-> You may need to sign in to your Zoho account before installing the extension.
+> **Important:** Please make sure you are signed in with your **Zoho.com account**, not your **Zoho.in account**, before installing the extension. The extension requires you to be logged in to a Zoho.com account.
+
 
 ---
 
