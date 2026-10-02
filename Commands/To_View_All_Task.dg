@@ -1,0 +1,90 @@
+
+try 
+{
+	// STEP 1: Get mapping from DB
+	cliq_user_id = user.get("id");
+	search_query = Map();
+	search_query.put("criteria","cliquserid=" + cliq_user_id);
+	db_rec = zoho.cliq.getRecords("redbooth",search_query);
+	if(db_rec.get("list").size() == 0)
+	{
+		return {"text":"❌ You have not connected your Redbooth account!"};
+	}
+	redbooth_user_id = db_rec.get("list").get(0).get("redboothuserid");
+	// STEP 2: Fetch tasks
+	tasks = invokeurl
+	[
+		url :"https://redbooth.com/api/3/tasks?assigned_user_id=" + redbooth_user_id + "&archived=false"
+		type :GET
+		connection:"redboothforcliq"
+	];
+	info tasks;
+	if(tasks.isEmpty())
+	{
+		return {"text":"📭 No tasks found in Redbooth!"};
+	}
+	rows_list = List();
+	for each  t in tasks
+	{
+		row = Map();
+		// TASK NAME
+		row.put("Task","📝 " + t.get("name"));
+		// DUE DATE
+		if(t.containsKey("due_on") && t.get("due_on") != null)
+		{
+			row.put("Due",t.get("due_on"));
+		}
+		else
+		{
+			row.put("Due","No due date");
+		}
+		// STATUS
+		if(t.get("status") == "open")
+		{
+			row.put("Status","Open");
+		}
+		else
+		{
+			row.put("Status","Closed");
+		}
+		// ACTION BUTTON
+		action_btn = Map();
+		action_btn.put("label","Edit");
+		action_map = Map();
+		action_map.put("type","invoke.function");
+		action_map.put("name","update_redbooth_task");
+		data_map = Map();
+		data_map.put("task_id",t.get("id"));
+		action_map.put("data",data_map);
+		action_btn.put("action",action_map);
+		row.put("Action",action_btn);
+		rows_list.add(row);
+	}
+	// TABLE HEADERS
+	headers_list = List();
+	headers_list.add("Task");
+	headers_list.add("Due");
+	headers_list.add("Status");
+	// TABLE DATA
+	table_data = Map();
+	table_data.put("headers",headers_list);
+	table_data.put("rows",rows_list);
+	// SLIDE
+	slide = Map();
+	slide.put("type","table");
+	slide.put("title","🗂️ Your Tasks");
+	slide.put("data",table_data);
+	slides_list = List();
+	slides_list.add(slide);
+	// FINAL CARD
+	card = Map();
+	card.put("text","✨ Here are your tasks !");
+	card.put("slides",slides_list);
+	return card;
+}
+catch (e)
+{
+	info e;
+	return {"text":"😵 Error fetching tasks! Please try again."};
+}
+return Map();

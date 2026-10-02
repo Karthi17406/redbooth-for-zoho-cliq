@@ -1,0 +1,180 @@
+
+id = "dashboard";
+imgUrls = {"https://images.pexels.com/photos/3854816/pexels-photo-3854816.jpeg","https://images.pexels.com/photos/3854816/pexels-photo-3854816.jpeg","https://images.pexels.com/photos/3854816/pexels-photo-3854816.jpeg","https://images.pexels.com/photos/131979/pexels-photo-131979.jpeg"};
+if(target.containKey("id"))
+{
+	id = target.get("id");
+}
+sections = list();
+tabsArr = {{"label":"Dashboard","id":"dashboard"},{"label":"Switch Project","id":"switchproject"},{"label":"Create Task","id":"createtask"},{"label":"Manage Tasks","id":"edittasks"},{"label":"View All Tasks","id":"viewtask"}};
+if(id == "dashboard")
+{
+	header = {"title":"Dashboard"};
+	sections = list();
+	dataList = list();
+	// CREATE TASK CARD
+	eachData = Map();
+	eachData.put("title","Create Task");
+	eachData.put("description","Add a new task with required details.");
+	eachData.put("image_url","https://images.pexels.com/photos/317356/pexels-photo-317356.jpeg");
+	eachData.put("icon_url","https://images.pexels.com/photos/317356/pexels-photo-317356.jpeg");
+	btn = list();
+	btn.add({"label":"Create Task","type":"invoke.function","name":"createtaskform"});
+	eachData.put("buttons",btn);
+	dataList.add(eachData);
+	// SWITCH PROJECT CARD
+	eachData = Map();
+	eachData.put("title","Switch Project");
+	eachData.put("description","Switch your project");
+	eachData.put("image_url","https://images.pexels.com/photos/131979/pexels-photo-131979.jpeg");
+	eachData.put("icon_url","https://images.pexels.com/photos/131979/pexels-photo-131979.jpeg");
+	btn = list();
+	btn.add({"label":"Switch Project","type":"invoke.function","name":"switchprojectwid"});
+	eachData.put("buttons",btn);
+	dataList.add(eachData);
+	// VIEW TASK CARD
+	eachData = Map();
+	eachData.put("title","View Task");
+	eachData.put("description","Check the details of a task.");
+	eachData.put("image_url","https://images.pexels.com/photos/1629212/pexels-photo-1629212.jpeg");
+	eachData.put("icon_url","https://images.pexels.com/photos/1629212/pexels-photo-1629212.jpeg");
+	btn = list();
+	btn.add({"label":"View Task","type":"invoke.function","name":"viewtask"});
+	eachData.put("buttons",btn);
+	dataList.add(eachData);
+	// EDIT TASK CARD
+	eachData = Map();
+	eachData.put("title","Manage Tasks");
+	eachData.put("description","Update an existing task’s details.");
+	eachData.put("image_url","https://images.pexels.com/photos/3854816/pexels-photo-3854816.jpeg");
+	eachData.put("icon_url","https://images.pexels.com/photos/3854816/pexels-photo-3854816.jpeg");
+	btn = list();
+	btn.add({"label":"Manage Tasks","type":"invoke.function","name":"editwid"});
+	eachData.put("buttons",btn);
+	dataList.add(eachData);
+	// ADDING CARDS TO SECTION
+	elements = list();
+	elements.add({"type":"cards","data":dataList,"style":{"view":"gallery","size":"small"}});
+	sections.add({"id":1,"elements":elements});
+	return {"type":"applet","tabs":tabsArr,"active_tab":id,"sections":sections,"header":header};
+}
+else if(id == "createtask")
+{
+	header = {"title":"Create Tasks"};
+	dataList = list();
+	eachData = Map();
+	eachData.put("title","Create Task");
+	eachData.put("description","Add a new task with required details.");
+	eachData.put("image_url","https://images.pexels.com/photos/317356/pexels-photo-317356.jpeg");
+	eachData.put("icon_url","https://images.pexels.com/photos/317356/pexels-photo-317356.jpeg");
+	eachData.put("buttons",{{"label":"Create Task","type":"invoke.function","name":"createtaskform","id":"boardId","emotion":"positive"}});
+	dataList.add(eachData);
+	elements = list();
+	elements.add({"type":"cards","data":dataList,"style":{"view":"gallery","size":"small"}});
+	elements.add({"type":"divider"});
+	sections.add({"id":1,"elements":elements});
+	return {"type":"applet","tabs":tabsArr,"active_tab":id,"sections":sections,"header":header};
+}
+else if(id == "edittasks")
+{
+	header = {"title":"Manage Tasks"};
+	dataList = list();
+	eachData = Map();
+	eachData.put("title","Manage Tasks");
+	eachData.put("description","Update an existing task’s details.");
+	eachData.put("image_url","https://images.pexels.com/photos/3854816/pexels-photo-3854816.jpeg");
+	eachData.put("icon_url","https://images.pexels.com/photos/3854816/pexels-photo-3854816.jpeg");
+	eachData.put("buttons",{{"label":"Manage Tasks","type":"invoke.function","name":"editwid","id":"boardId","emotion":"positive"}});
+	dataList.add(eachData);
+	elements = list();
+	elements.add({"type":"cards","data":dataList,"style":{"view":"gallery","size":"small"}});
+	elements.add({"type":"divider"});
+	sections.add({"id":1,"elements":elements});
+	return {"type":"applet","tabs":tabsArr,"active_tab":id,"sections":sections,"header":header};
+}
+else if(id == "viewtask")
+{
+	header = {"title":"View All Tasks"};
+	dataList = list();
+	eachData = Map();
+	eachData.put("title","View All Tasks");
+	eachData.put("description","Check the details of a task.");
+	eachData.put("image_url","https://images.pexels.com/photos/1629212/pexels-photo-1629212.jpeg");
+	eachData.put("icon_url","https://images.pexels.com/photos/1629212/pexels-photo-1629212.jpeg");
+	eachData.put("buttons",{{"label":"View All Tasks","type":"invoke.function","name":"viewtask","emotion":"positive"}});
+	dataList.add(eachData);
+	elements = list();
+	elements.add({"type":"cards","data":dataList,"style":{"view":"gallery","size":"small"}});
+	elements.add({"type":"divider"});
+	sections.add({"id":1,"elements":elements});
+	return {"type":"applet","tabs":tabsArr,"active_tab":id,"sections":sections,"header":header};
+}
+else if(id == "switchproject")
+{
+	header = {"title":"Switch Project"};
+	dataList = list();
+	eachData = Map();
+	eachData.put("title","Switch Project");
+	eachData.put("description","switch your project");
+	eachData.put("image_url","https://images.pexels.com/photos/131979/pexels-photo-131979.jpeg");
+	eachData.put("icon_url","https://images.pexels.com/photos/131979/pexels-photo-131979.jpeg");
+	eachData.put("buttons",{{"label":"Switch Project","type":"invoke.function","name":"switchprojectwid","id":"boardId","emotion":"positive"}});
+	dataList.add(eachData);
+	elements = list();
+	elements.add({"type":"cards","data":dataList,"style":{"view":"gallery","size":"small"}});
+	elements.add({"type":"divider"});
+	sections.add({"id":1,"elements":elements});
+	return {"type":"applet","tabs":tabsArr,"active_tab":id,"sections":sections,"header":header};
+}
+else if(id == "help")
+{
+	info "hel...p";
+	elements = list();
+	// Title
+	elements.add({"type":"title","text":"👋 Welcome to Your Red Booth Task Manager Assistant!"});
+	// Intro
+	elements.add({"type":"text","text":"I'm here to help you manage, track and automate tasks efficiently 🚀\n\nBelow is everything you can do using this widget:"});
+	// =========================
+	// Core Features
+	// =========================
+	elements.add({"type":"title","text":"⚡ Core Features"});
+	elements.add({"type":"text","text":"• Create tasks\n• Edit and update details\n• View tasks in one dashboard\n• Delete tasks instantly"});
+	// =========================
+	// Modules
+	// =========================
+	elements.add({"type":"title","text":"📌 Modules You Can Access"});
+	elements.add({"type":"text","text":"📊 Workspaces – Create & manage workspaces\n📝 Tasks – Track deadlines & status\n📅 Projects – Monitor progress & timeline\n👥 Users – View user information"});
+	// =========================
+	// Slash Commands (Table)
+	// =========================
+	elements.add({"type":"title","text":"⚙ Slash Commands"});
+	table_headers = list();
+	table_headers.add("Command");
+	table_headers.add("Description");
+	table_rows = list();
+	table_rows.add({"Command":"/createtask","Description":"Create Task with name, due etc"});
+	table_rows.add({"Command":"/alltask","Description":"Show tasks with due date & status."});
+	table_rows.add({"Command":"/edittask","Description":"Edit and update the tasks."});
+	table_rows.add({"Command":"/viewtask","Description":"View a task in project"});
+	elements.add({"type":"table","headers":table_headers,"rows":table_rows});
+	// =========================
+	// Menu Actions
+	// =========================
+	elements.add({"type":"title","text":"🧭 Menu Actions"});
+	elements.add({"type":"text","text":"🔹 Create Task – Quickly add tasks\n" + "🔹 View Users – Explore user info\n" + "🔹 View Projects – View teams & deadlines\n" + "🔹 Alerts Enable – Turn ON notifications\n" + "🔹 Alerts Disable – Turn OFF notifications"});
+	// =========================
+	// Message Actions
+	// =========================
+	elements.add({"type":"title","text":"💬 Message Actions"});
+	elements.add({"type":"text","text":"➕ Add Task – Create via chat message\n" + "💬 Add Comment – Add comments directly"});
+	// =========================
+	// Widget Features Summary
+	// =========================
+	elements.add({"type":"title","text":"🧩 Widget Features Overview"});
+	elements.add({"type":"text","text":"📌 Dashboard – Manage tasks list\n" + "🗂 Workspace – Create / update details\n" + "📋 List View – Shows assigned users\n" + "📁 Projects – Monitor deadlines\n" + "📝 Tasks – Add / edit / delete\n" + "👥 Users – View across workspace"});
+	// Return UI
+	sections = list();
+	sections.add({"id":1,"elements":elements});
+	return {"type":"applet","sections":sections,"header":{"title":"📖 Help & Usage Guide"}};
+}
+return {"type":"applet","tabs":tabsArr,"active_tab":id,"sections":sections};

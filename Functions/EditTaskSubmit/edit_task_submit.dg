@@ -1,0 +1,21 @@
+
+formValues = form.get("values");
+task_id = formValues.get("task_id");
+updated_name = formValues.get("task_name");
+assignee_id = formValues.get("assignee_id");
+updated_due = formValues.get("dueon");
+update_map = Map();
+update_map.put("name",updated_name);
+update_map.put("due_on",updated_due);
+update_map.put("assignee",assignee_id);
+updated_task = invokeurl
+[
+	url :"https://redbooth.com/api/3/tasks/" + task_id
+	type :PUT
+	parameters:update_map
+	connection:"redboothforcliq"
+];
+info updated_task;
+success = Map();
+success.put("text","✅ Task updated successfully!");
+return success;

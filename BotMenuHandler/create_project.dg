@@ -1,0 +1,45 @@
+
+response = invokeurl
+[
+	url :"https://redbooth.com/api/3/projects"
+	type :GET
+	connection:"redboothforcliq"
+];
+info response;
+org_id = "";
+for each  p in response
+{
+	if(p.containsKey("organization_id"))
+	{
+		org_id = p.get("organization_id");
+		break;
+	}
+}
+info "ORG ID: " + org_id;
+response = Map();
+response.put("type","form");
+response.put("title","Create Project");
+response.put("name","createproject");
+response.put("hint","To create project");
+response.put("button_label","Submit");
+inputsList = list();
+inputsList0 = Map();
+inputsList0.put("label","Project Name");
+inputsList0.put("name","projectname");
+inputsList0.put("placeholder","Enter Your Project Name");
+inputsList0.put("min_length","0");
+inputsList0.put("max_length","100");
+inputsList0.put("mandatory",true);
+inputsList0.put("type","text");
+inputsList.add(inputsList0);
+hiddenField = Map();
+hiddenField.put("type","hidden");
+hiddenField.put("name","org_id");
+hiddenField.put("value",org_id);
+inputsList.add(hiddenField);
+response.put("inputs",inputsList);
+action = Map();
+action.put("type","invoke.function");
+action.put("name","createprojectsubmit");
+response.put("action",action);
+return response;

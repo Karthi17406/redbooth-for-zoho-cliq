@@ -1,0 +1,156 @@
+
+cliq_user_id = user.get("id");
+// STEP 1 — Fetch mapping from DB
+query = Map();
+query.put("criteria","cliquserid=" + cliq_user_id);
+db = zoho.cliq.getRecords("redbooth",query);
+redbooth_user_id = db.get("list").get(0).get("redboothuserid");
+// FETCH TASK LISTS
+tasks = invokeurl
+[
+	url :"https://redbooth.com/api/3/task_lists?assigned_user_id=" + redbooth_user_id + "&archived=false"
+	type :GET
+	connection:"redboothforcliq"
+];
+peopleList = invokeurl
+[
+	url :"https://redbooth.com/api/3/me"
+	type :GET
+	connection:"redboothforcliq"
+];
+info "hello" + peopleList;
+me = invokeurl
+[
+	url :"https://redbooth.com/api/3/organizations"
+	type :GET
+	connection:"redboothforcliq"
+];
+info me;
+// Extract organization ID dynamically
+org_id = me.get(0).get("id");
+// Get the org_id dynamically
+res = invokeurl
+[
+	url :"https://redbooth.com/api/3/people?organization_id=" + org_id.toString() + "&per_page=1000"
+	type :GET
+	connection:"redboothforcliq"
+];
+info res;
+//info tasks;
+// FETCH PROJECT LIST
+projects = invokeurl
+[
+	url :"https://redbooth.com/api/3/projects?user_id=" + redbooth_user_id + "&archived=false"
+	type :GET
+	connection:"redboothforcliq"
+];
+// STEP 1 — Get logged-in user's Redbooth profi
+// STEP 2 — Get all people inside this organization
+people_response = invokeurl
+[
+	url :"https://redbooth.com/api/3/people?organization_id=" + org_id
+	type :GET
+	connection:"redboothforcliq"
+];
+info "people res:" + people_response;
+final_list = List();
+// STEP 3 — For each person → fetch their name + email
+for each  person in people_response
+{
+	user_id = person.get("user_id");
+	// Fetch user details
+	user_details = invokeurl
+	[
+		url :"https://redbooth.com/api/3/users/" + user_id
+		type :GET
+		connection:"redboothforcliq"
+	];
+	info "ueser : " + user_details;
+	user_map = Map();
+	user_map.put("user_id",user_id);
+	user_map.put("name",user_details.get("first_name"));
+	user_map.put("email",user_details.get("email"));
+	user_map.put("role",person.get("role"));
+	final_list.add(user_map);
+}
+// assignee details
+info "final" + final_list;
+task_id = arguments.get("key");
+info task_id;
+cliq_user_id = user.get("id");
+// STEP 1 — Fetch mapping from DB
+query = Map();
+query.put("criteria","cliquserid=" + cliq_user_id);
+db = zoho.cliq.getRecords("redbooth",query);
+redbooth_user_id = db.get("list").get(0).get("redboothuserid");
+tasks = invokeurl
+[
+	url :"https://redbooth.com/api/3/tasks?assigned_user_id=" + redbooth_user_id + "&archived=false"
+	type :GET
+	connection:"redboothforcliq"
+];
+info tasks;
+i = 0;
+for each  t in tasks
+{
+	if(tasks.get(i).get("id") == task_id)
+	{
+		task_name = tasks.get(i).get("name");
+		due_on = tasks.get(i).get("due_on");
+		if(due_on == null || due_on == "")
+		{
+			due_on = 0;
+		}
+	}
+	i = i + 1;
+}
+assignee_options = List();
+for each  name in final_list
+{
+	user_id = name.get("user_id");
+	user_name = name.get("name");
+	opt_user = Map();
+	opt_user.put("value",user_id.toString());
+	opt_user.put("label",user_name);
+	assignee_options.add(opt_user);
+}
+response = Map();
+response.put("type","form");
+response.put("title","Edit And Update Task");
+response.put("name","edittask");
+response.put("hint","You can edit the task details to update it.");
+response.put("button_label","Submit");
+inputsList = list();
+task_name_raw = tasks.get(0).get("name");
+info task_name_raw;
+inputsList0 = Map();
+inputsList0.put("label","Task Name");
+inputsList0.put("name","task_name");
+inputsList0.put("placeholder","Enter your task name");
+inputsList0.put("min_length","0");
+inputsList0.put("max_length","300");
+inputsList0.put("mandatory",true);
+inputsList0.put("type","text");
+inputsList0.put("value",task_name);
+inputsList.add(inputsList0);
+//assignee
+inputsList2 = Map();
+inputsList2.put("label","Due On");
+inputsList2.put("name","dueon");
+inputsList2.put("placeholder","Enter your due date ");
+inputsList2.put("hint","Set a date to complete the task");
+inputsList2.put("mandatory",false);
+inputsList2.put("type","date");
+inputsList2.put("value",due_on);
+inputsList.add(inputsList2);
+inputsList3 = Map();
+inputsList3.put("name","task_id");
+inputsList3.put("type","hidden");
+inputsList3.put("value",task_id);
+inputsList.add(inputsList3);
+response.put("inputs",inputsList);
+action = Map();
+action.put("type","invoke.function");
+action.put("name","submit");
+response.put("action",action);
+return response;

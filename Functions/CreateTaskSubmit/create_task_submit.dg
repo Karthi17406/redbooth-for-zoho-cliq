@@ -1,0 +1,60 @@
+
+formValues = form.get("values");
+info formValues;
+// Extract values
+project_map = formValues.get("project_id");
+tasklist_map = formValues.get("tasklist_id");
+project_id = project_map.get("value");
+tasklist_id = tasklist_map.get("value");
+task_name = formValues.get("taskname");
+description = formValues.get("description");
+due_date = formValues.get("date");
+info "due" + due_date;
+//assignee_id = formValues.get("assignee_id");
+// Build POST body
+task_data = Map();
+task_data.put("project_id",project_id.toLong());
+task_data.put("task_list_id",tasklist_id.toLong());
+task_data.put("name",task_name);
+task_data.put("description",description);
+task_data.put("due_on",due_date);
+//task_data.put("assignee_id",assignee_id);
+// API Call — Create Task
+created_task = invokeurl
+[
+	url :"https://redbooth.com/api/3/tasks"
+	type :POST
+	parameters:task_data
+	connection:"redboothforcliq"
+];
+info "proj" + created_task;
+// 2. Get created task ID
+task_id = created_task.get("id");
+// 3. UPDATE — Set assignee
+update_task = Map();
+response_api = invokeurl
+[
+	url :"https://redbooth.com/api/3/me"
+	type :GET
+	connection:"redboothforcliq"
+];
+info response_api;
+if(response_api.containsKey("id"))
+{
+	primary_assignee = response_api.get("id").toLong();
+}
+update_task.put("assigned_user_id",primary_assignee.toLong());
+info "update task data";
+info update_task;
+assigned_response = invokeurl
+[
+	url :"https://redbooth.com/api/3/tasks/" + task_id.toString()
+	type :PUT
+	parameters:update_task
+	connection:"redboothforcliq"
+];
+info assigned_response;
+// Success message
+success = Map();
+success.put("text","✅ Task created successfully in Redbooth!");
+return success;

@@ -1,0 +1,75 @@
+
+try 
+{
+	cliq_user_id = user.get("id");
+	search_query = Map();
+	search_query.put("criteria","cliquserid=" + cliq_user_id);
+	db_rec = zoho.cliq.getRecords("redbooth",search_query);
+	if(db_rec.get("list").size() == 0)
+	{
+		return {"text":"❌ You have not connected your Redbooth account!"};
+	}
+	redbooth_user_id = db_rec.get("list").get(0).get("redboothuserid");
+	// Fetch tasks
+	tasks = invokeurl
+	[
+		url :"https://redbooth.com/api/3/tasks?assigned_user_id=" + redbooth_user_id + "&archived=false"
+		type :GET
+		connection:"redboothforcliq"
+	];
+	elements = List();
+	// If no tasks → show empty message
+	if(tasks.isEmpty())
+	{
+		elements.add({"type":"activity","title":"📭 No Tasks Found!","description":"You don't have any tasks assigned in Redbooth.","image_url":"https://i.imgur.com/ZSIOsEj.png"});
+	}
+	else
+	{
+		// Prepare headers
+		headers = List();
+		headers.add("Task");
+		headers.add("Due");
+		headers.add("Status");
+		// Prepare rows
+		rows = List();
+		for each  t in tasks
+		{
+			row = Map();
+			// Task Name
+			row.put("Task",t.get("name"));
+			// Due date
+			if(t.containsKey("due_on") && t.get("due_on") != null)
+			{
+				row.put("Due",t.get("due_on"));
+			}
+			else
+			{
+				row.put("Due","No due date");
+			}
+			// Status
+			if(t.get("status") == "open")
+			{
+				row.put("Status","Open");
+			}
+			else
+			{
+				row.put("Status","Closed");
+			}
+			rows.add(row);
+		}
+		// Add table element
+		elements.add({"type":"table","headers":headers,"rows":rows});
+	}
+	// Prepare sections
+	sections = List();
+	sections.add({"id":1,"elements":elements});
+	tabsArr = {{"label":"Dashboard","id":"dashboard"},{"label":"Switch Project","id":"switchproject"},{"label":"Create Task","id":"createtask"},{"label":"Manage Tasks","id":"edittasks"},{"label":"View All Tasks","id":"viewtask"}};
+	return {"type":"applet","tabs":tabsArr,"active_tab":"viewtask","sections":sections};
+	//return {"type":"applet","tabs":{{"label":"Home","id":"homeTab"}},"active_tab":"homeTab","sections":sections};
+}
+catch (e)
+{
+	info e;
+	return {"text":"😵 Error fetching tasks!"};
+}
+return Map();

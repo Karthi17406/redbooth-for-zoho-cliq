@@ -1,0 +1,186 @@
+
+cliq_user_id = user.get("id");
+// STEP 1 — Fetch mapping from DB
+query = Map();
+query.put("criteria","cliquserid=" + cliq_user_id);
+db = zoho.cliq.getRecords("redbooth",query);
+redbooth_user_id = db.get("list").get(0).get("redboothuserid");
+// FETCH TASK LISTS
+tasks = invokeurl
+[
+	url :"https://redbooth.com/api/3/task_lists?assigned_user_id=" + redbooth_user_id + "&archived=false"
+	type :GET
+	connection:"redboothforcliq"
+];
+peopleList = invokeurl
+[
+	url :"https://redbooth.com/api/3/me"
+	type :GET
+	connection:"redboothforcliq"
+];
+info "hello" + peopleList;
+me = invokeurl
+[
+	url :"https://redbooth.com/api/3/organizations"
+	type :GET
+	connection:"redboothforcliq"
+];
+info me;
+// Extract organization ID dynamically
+org_id = me.get(0).get("id");
+// Get the org_id dynamically
+res = invokeurl
+[
+	url :"https://redbooth.com/api/3/people?organization_id=" + org_id.toString() + "&per_page=1000"
+	type :GET
+	connection:"redboothforcliq"
+];
+info res;
+//info tasks;
+// FETCH PROJECT LIST
+projects = invokeurl
+[
+	url :"https://redbooth.com/api/3/projects?user_id=" + redbooth_user_id + "&archived=false"
+	type :GET
+	connection:"redboothforcliq"
+];
+// STEP 1 — Get logged-in user's Redbooth profi
+// STEP 2 — Get all people inside this organization
+people_response = invokeurl
+[
+	url :"https://redbooth.com/api/3/people?organization_id=" + org_id
+	type :GET
+	connection:"redboothforcliq"
+];
+info "people res:" + people_response;
+final_list = List();
+// STEP 3 — For each person → fetch their name + email
+for each  person in people_response
+{
+	user_id = person.get("user_id");
+	// Fetch user details
+	user_details = invokeurl
+	[
+		url :"https://redbooth.com/api/3/users/" + user_id
+		type :GET
+		connection:"redboothforcliq"
+	];
+	info "ueser : " + user_details;
+	user_map = Map();
+	user_map.put("user_id",user_id);
+	user_map.put("name",user_details.get("first_name"));
+	user_map.put("email",user_details.get("email"));
+	user_map.put("role",person.get("role"));
+	final_list.add(user_map);
+}
+// assignee details
+info "final" + final_list;
+//info projects;
+//project options
+project_options = List();
+for each  proj in projects
+{
+	proj_id = proj.get("id");
+	proj_name = proj.get("name");
+	option = Map();
+	option.put("value",proj_id.toString());
+	option.put("label",proj_name);
+	project_options.add(option);
+}
+// ------------------------
+// BUILD TASK LIST DROPDOWN
+// ------------------------
+task_options = List();
+for each  t in tasks
+{
+	tasklist_id = t.get("id");
+	tasklist_name = t.get("name");
+	opt = Map();
+	opt.put("value",tasklist_id.toString());
+	opt.put("label",tasklist_name);
+	task_options.add(opt);
+}
+// assignee details
+assignee_options = List();
+for each  name in final_list
+{
+	user_id = name.get("user_id");
+	user_name = name.get("name");
+	opt_user = Map();
+	opt_user.put("value",user_id.toString());
+	opt_user.put("label",user_name);
+	assignee_options.add(opt_user);
+}
+// ------------------------
+// BUILD FINAL FORM
+// ------------------------
+response = Map();
+response.put("type","form");
+response.put("title","Select Project & Task List");
+response.put("name","task_form");
+response.put("hint","Choose a project and task list");
+response.put("button_label","Submit");
+inputsList = List();
+// Project dropdown
+input_project = Map();
+input_project.put("label","Select Project");
+input_project.put("name","project_id");
+input_project.put("placeholder","Choose project");
+input_project.put("multiple",false);
+input_project.put("mandatory",true);
+input_project.put("type","select");
+input_project.put("options",project_options);
+inputsList.add(input_project);
+// Task list dropdown
+input_task = Map();
+input_task.put("label","Select Task List");
+input_task.put("name","tasklist_id");
+input_task.put("placeholder","Choose task list");
+input_task.put("multiple",false);
+input_task.put("mandatory",true);
+input_task.put("type","select");
+input_task.put("options",task_options);
+inputsList.add(input_task);
+//assignee
+input_assignee = Map();
+input_assignee.put("label","Select Assignee");
+input_assignee.put("name","assignee_id");
+input_assignee.put("placeholder","Choose Assignee");
+input_assignee.put("multiple",false);
+input_assignee.put("mandatory",true);
+input_assignee.put("type","select");
+input_assignee.put("options",assignee_options);
+inputsList.add(input_assignee);
+// Attach inputs
+inputsList3 = Map();
+inputsList3.put("label","Task Name");
+inputsList3.put("name","taskname");
+inputsList3.put("placeholder","Enter Your Task Name");
+inputsList3.put("min_length","0");
+inputsList3.put("max_length","100");
+inputsList3.put("mandatory",true);
+inputsList3.put("type","text");
+inputsList.add(inputsList3);
+inputsList0 = Map();
+inputsList0.put("label","Description ");
+inputsList0.put("name","description");
+inputsList0.put("placeholder","describe about your task");
+inputsList0.put("min_length","0");
+inputsList0.put("max_length","25");
+inputsList0.put("mandatory",true);
+inputsList0.put("type","textarea");
+inputsList.add(inputsList0);
+inputsList1 = Map();
+inputsList1.put("label","Due Date");
+inputsList1.put("name","date");
+inputsList1.put("placeholder","Task due date");
+inputsList1.put("mandatory",false);
+inputsList1.put("type","date");
+inputsList.add(inputsList1);
+response.put("inputs",inputsList);
+// Action
+action = Map();
+action.put("type","invoke.function");
+action.put("name","createtask");
+response.put("action",action);
+return response;

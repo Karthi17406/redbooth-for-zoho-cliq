@@ -1,0 +1,10 @@
+
+task_id = arguments.get("key");
+info task_id;
+response = invokeurl
+[
+	url :"https://redbooth.com/api/3/tasks/" + task_id
+	type :DELETE
+	connection:"redboothforcliq"
+];
+return Map();

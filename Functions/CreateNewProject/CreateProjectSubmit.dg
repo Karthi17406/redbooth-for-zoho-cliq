@@ -1,0 +1,38 @@
+
+// Get form values
+formValues = form.get("values");
+info formValues;
+project_name = formValues.get("projectname");
+org_id = formValues.get("org_id");
+info "org" + org_id;
+info "pro" + project_name;
+// Use the org_id you fetched earlier
+// replace with dynamic value if available
+// Prepare data for creating a new project
+create_map = Map();
+create_map.put("organization_id",org_id);
+// required
+create_map.put("name",project_name);
+// required
+// optional, default true
+// Call Redbooth API to create project
+created_project = invokeurl
+[
+	url :"https://redbooth.com/api/3/projects"
+	type :POST
+	parameters:create_map
+	connection:"redboothforcliq"
+];
+// Log response for debugging
+info created_project;
+response = invokeurl
+[
+	url :"https://redbooth.com/api/3/projects"
+	type :GET
+	connection:"redboothforcliq"
+];
+info "res" + response;
+// Return success message
+success = Map();
+success.put("text","✅ Project created successfully!");
+return success;

@@ -1,0 +1,78 @@
+
+response = invokeurl
+[
+	url :"https://redbooth.com/api/3/projects"
+	type :GET
+	connection:"redboothforcliq"
+];
+info response;
+org_id = "";
+for each  p in response
+{
+	if(p.containsKey("organization_id"))
+	{
+		org_id = p.get("organization_id");
+		break;
+	}
+}
+info "ORG ID: " + org_id;
+// Default values
+first_proj_id = "";
+first_proj_name = "";
+// Take the FIRST project
+if(response.size() > 0)
+{
+	first_proj = response.get(0);
+	first_proj_id = first_proj.get("id");
+	first_proj_name = first_proj.get("name");
+}
+info "FIRST PROJECT ID: " + first_proj_id;
+info "FIRST PROJECT NAME: " + first_proj_name;
+values_map = Map();
+values_map.put("cliquserid",user.get("id"));
+// User ID
+values_map.put("projectid",first_proj_id.toString());
+// First project ID
+values_map.put("projectname",first_proj_name);
+// First project name
+// 4. Insert into DB table redboothproject
+insert_db = zoho.cliq.createRecord("redboothproject",values_map);
+info insert_db;
+proj_options = List();
+for each  projname in response
+{
+	// Get project id and name directly from the object
+	proj_id = projname.get("id");
+	proj_name = projname.get("name");
+	// Prepare option map for dropdown (if needed)
+	opt_user = Map();
+	opt_user.put("value",proj_id.toString());
+	opt_user.put("label",proj_name);
+	// Debug info
+	info "value" + proj_id;
+	info "proj_name: " + proj_name;
+	proj_options.add(opt_user);
+}
+response = Map();
+response.put("type","form");
+response.put("title","Switch Project");
+response.put("name","selectproject");
+response.put("hint","To Select Project");
+response.put("button_label","Save");
+inputsList = list();
+inputsList0 = Map();
+inputsList0.put("label","To Switch Project");
+inputsList0.put("name","dynamic_select");
+inputsList0.put("placeholder","choose project");
+inputsList0.put("multiple",false);
+inputsList0.put("mandatory",false);
+inputsList0.put("type","dynamic_select");
+inputsList0.put("options",proj_options);
+inputsList.add(inputsList0);
+response.put("inputs",inputsList);
+action = Map();
+action.put("type","invoke.function");
+action.put("name","saveforswitchproj");
+response.put("action",action);
+return response;
+/////////switc proj

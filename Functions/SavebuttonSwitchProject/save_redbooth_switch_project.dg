@@ -1,0 +1,37 @@
+
+formValues = form.get("values");
+// 1. Get the inner map under "dynamic_select"
+dyn_select = formValues.get("dynamic_select");
+// Extract values
+proj_label = dyn_select.get("label");
+proj_value = dyn_select.get("value");
+// 2. Values for DB
+values_map = Map();
+values_map.put("cliquserid",user.get("id"));
+// corrected field name to match DB column
+values_map.put("projectid",proj_value);
+values_map.put("projectname",proj_label);
+// 3. Query existing record for this user
+zoho.cliq.createRecord("redboothproject",values_map);
+query_map = Map();
+query_map.put("from_index",0);
+query_map.put("limit",1);
+response_map = zoho.cliq.getRecords("redboothproject",query_map);
+info "Response: " + response_map.toString();
+if(response_map.get("status") == "SUCCESS" && response_map.get("list").size() > 0)
+{
+	first_record = response_map.get("list").get(0);
+	info "First Record: " + first_record.toString();
+	// Access fields as needed
+	proj_id = first_record.get("projectid");
+	proj_name = first_record.get("projectname");
+	info "Project ID: " + proj_id;
+	info "Project Name: " + proj_name;
+}
+else
+{
+	info "No records found or failed to fetch";
+}
+// 5. Create new record (whether or not a previous one existed)
+// 6. Return empty map as form submit handler
+return Map();

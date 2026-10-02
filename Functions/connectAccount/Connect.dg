@@ -1,0 +1,91 @@
+
+try 
+{
+	// Step 1: Check if user already exists in DB
+	query = Map();
+	query.put("criteria","cliquserid=" + user.get("id"));
+	db = zoho.cliq.getRecords("redbooth",query);
+	if(db.get("status") == "SUCCESS")
+	{
+		if(db.get("list").size() > 0)
+		{
+			// Already connected
+			response = Map();
+			bot = Map();
+			bot.put("name","Redbooth Bot");
+			response.put("bot",bot);
+			response.put("text","You are already connected to Redbooth!\n" + "No need to connect again 🚀");
+			return response;
+		}
+		else
+		{
+			// NEW USER → FETCH REDBOOTH DETAILS
+			response_api = invokeurl
+			[
+				url :"https://redbooth.com/api/3/me"
+				type :GET
+				connection:"redboothforcliq"
+			];
+			info response_api;
+			if(!response_api.containsKey("id"))
+			{
+				response = Map();
+				bot = Map();
+				bot.put("name","Redbooth Bot");
+				response.put("bot",bot);
+				response.put("text","❌ Could not fetch your Redbooth account.\n" + "Please re-authorize the connection.");
+				return response;
+			}
+			// Extract organization
+			organizations = response_api.get("organizations");
+			org_id = "";
+			org_name = "";
+			for each  org in organizations
+			{
+				org_id = org.get("id");
+				org_name = org.get("name");
+				break;
+			}
+			// User values
+			name = ifnull(response_api.get("full_name"),response_api.get("username"));
+			email = response_api.get("email");
+			redbooth_user_id = response_api.get("id");
+			cliq_user_id = user.get("id");
+			// Insert into DB
+			values = Map();
+			values.put("cliquserid",cliq_user_id);
+			values.put("redboothuserid",redbooth_user_id);
+			values.put("organizationid",org_id);
+			insert_res = zoho.cliq.createRecord("redbooth",values);
+			info insert_res;
+			// Success Response
+			response = Map();
+			bot = Map();
+			bot.put("name","Redbooth Bot");
+			response.put("bot",bot);
+			response.put("text","✅ Successfully connected to Redbooth!\n" + "👤 Name: " + name + "\n" + "📧 Email: " + email + "\n" + "🏢 Organization: " + org_name);
+			return response;
+		}
+	}
+	else
+	{
+		// DB Failure
+		response = Map();
+		bot = Map();
+		bot.put("name","Redbooth Bot");
+		response.put("bot",bot);
+		response.put("text","⚠️ Oops! Something went wrong. Please try again later.");
+		return response;
+	}
+}
+catch (e)
+{
+	info e;
+	response = Map();
+	bot = Map();
+	bot.put("name","Redbooth Bot");
+	response.put("bot",bot);
+	response.put("text","😵 Something went wrong!\n" + "Please try again in a moment.");
+	return response;
+}
+return Map();

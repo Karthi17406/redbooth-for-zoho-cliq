@@ -1,0 +1,52 @@
+
+params = Map();
+params.put("fields","*");
+cliq_user_id = user.get("id");
+// STEP 1 — Fetch mapping from DB
+query = Map();
+query.put("criteria","cliquserid=" + cliq_user_id);
+db = zoho.cliq.getRecords("redbooth",query);
+redbooth_user_id = db.get("list").get(0).get("redboothuserid");
+// Fetch Tasks
+tasks = invokeurl
+[
+	url :"https://redbooth.com/api/3/tasks?assigned_user_id=" + redbooth_user_id + "&archived=false"
+	type :GET
+	parameters:params
+	connection:"redboothforcliq"
+];
+btnReference = Map();
+array = List();
+rowList = List();
+i = 0;
+btnIndex = 0;
+for each  t in tasks
+{
+	task_id = tasks.get(i).get("id");
+	task_name = tasks.get(i).get("name");
+	due_on = tasks.get(i).get("due_on");
+	status = tasks.get(i).get("status");
+	if(due_on == null || due_on == "")
+	{
+		due_on = "No due date";
+	}
+	// EDIT BUTTON
+	btnIndex = btnIndex + 1;
+	edit_btn = btnIndex;
+	btnReference.put(edit_btn,{"type":"button","object":{"label":"Edit","action":{"type":"invoke.function","data":{"name":"edit"}},"key":task_id}});
+	// DELETE BUTTON
+	btnIndex = btnIndex + 1;
+	delete_btn = btnIndex;
+	btnReference.put(delete_btn,{"type":"button","object":{"label":"Delete","action":{"type":"invoke.function","data":{"name":"deleteforcom"}},"key":task_id}});
+	row = Map();
+	row.put("Task",task_name);
+	row.put("Due on",due_on);
+	row.put("Status",status);
+	// Show both buttons inside Action column
+	row.put("Action","[Edit]($" + edit_btn + ")   [Delete]($" + delete_btn + ")");
+	rowList.add(row);
+	i = i + 1;
+}
+array.add({"type":"table","title":"Your Tasks","data":{"headers":{"Task","Due on","Status","Action"},"rows":rowList}});
+response = {"card":{"title":"Here are your tasks","theme":"modern-inline"},"slides":array,"references":btnReference,"text":"Click *Edit* or *Delete* inside a row to manage tasks"};
+return response;
